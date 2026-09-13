@@ -1,7 +1,7 @@
 import React from 'react';
 import { Compass, Radio, ArrowRight, Sparkles } from 'lucide-react';
 
-export default function FinalCTA() {
+export default function FinalCTA({ onOpenSignal }) {
   return (
     <section className="final-cta-section" aria-labelledby="final-cta-heading">
       <div className="container">
@@ -25,10 +25,15 @@ export default function FinalCTA() {
               <span>ENTER THE MOMENT ENGINE</span>
               <ArrowRight size={16} aria-hidden="true" />
             </a>
-            <a href="#signal-vault" className="btn btn-secondary">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onOpenSignal}
+              aria-label="Send a signal to open KAIROS chatbot"
+            >
               <Radio size={16} aria-hidden="true" />
               <span>SEND A SIGNAL</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>

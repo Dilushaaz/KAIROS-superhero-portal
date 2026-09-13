@@ -1,16 +1,7 @@
-import React, { useState } from 'react';
-import { Database, Radio, Sparkles, Lock } from 'lucide-react';
+import React from 'react';
+import { Database, Radio, Lock } from 'lucide-react';
 
-export default function SignalVault() {
-  const [signalPromptNotice, setSignalPromptNotice] = useState(false);
-
-  const handleSimulateSignal = () => {
-    setSignalPromptNotice(true);
-    setTimeout(() => {
-      setSignalPromptNotice(false);
-    }, 4000);
-  };
-
+export default function SignalVault({ onOpenSignal }) {
   return (
     <section id="signal-vault" className="section" aria-labelledby="signal-vault-heading">
       <div className="container">
@@ -58,19 +49,14 @@ export default function SignalVault() {
             <button 
               type="button" 
               className="btn btn-primary"
-              onClick={handleSimulateSignal}
+              onClick={onOpenSignal}
+              aria-label="Send a signal to open KAIROS chatbot"
             >
               <Radio size={16} aria-hidden="true" />
               <span>SEND A SIGNAL</span>
             </button>
             <p className="vault-notice">
-              {signalPromptNotice ? (
-                <span style={{ color: 'var(--color-accent-cyan)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Sparkles size={14} /> Transceiver primed. Signal transmission channel verified on protocol AES-256.
-                </span>
-              ) : (
-                'Transmissions are processed in priority order through the Moment Engine.'
-              )}
+              Transmissions are processed in priority order through the Moment Engine.
             </p>
           </div>
         </div>

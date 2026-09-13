@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Radio, Menu, X, Disc } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ onOpenSignal }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -10,6 +10,14 @@ export default function Header() {
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+  };
+
+  const handleSignalClick = (e) => {
+    e.preventDefault();
+    closeMobileMenu();
+    if (onOpenSignal) {
+      onOpenSignal();
+    }
   };
 
   return (
@@ -33,10 +41,15 @@ export default function Header() {
 
         {/* Header CTA */}
         <div className="header-cta">
-          <a href="#signal-vault" className="btn btn-header-signal">
+          <button
+            type="button"
+            className="btn btn-header-signal"
+            onClick={handleSignalClick}
+            aria-label="Send a signal to open KAIROS chatbot"
+          >
             <Radio size={14} aria-hidden="true" />
             <span>SEND A SIGNAL</span>
-          </a>
+          </button>
 
           {/* Mobile Menu Toggle Button */}
           <button
@@ -58,10 +71,15 @@ export default function Header() {
           <a href="#abilities" className="nav-link" onClick={closeMobileMenu}>ABILITIES</a>
           <a href="#moment-engine" className="nav-link" onClick={closeMobileMenu}>MOMENT ENGINE</a>
           <a href="#signal-vault" className="nav-link" onClick={closeMobileMenu}>SIGNAL VAULT</a>
-          <a href="#signal-vault" className="btn btn-primary" onClick={closeMobileMenu}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSignalClick}
+            aria-label="Send a signal to open KAIROS chatbot"
+          >
             <Radio size={16} aria-hidden="true" />
             <span>SEND A SIGNAL</span>
-          </a>
+          </button>
         </div>
       )}
     </header>

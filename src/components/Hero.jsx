@@ -1,7 +1,7 @@
 import React from 'react';
 import { Radio, Compass, ArrowRight } from 'lucide-react';
 
-export default function Hero() {
+export default function Hero({ onOpenSignal }) {
   return (
     <section className="hero-section" aria-labelledby="hero-heading">
       <div className="container hero-grid">
@@ -31,10 +31,15 @@ export default function Hero() {
               <span>ENTER THE MOMENT ENGINE</span>
               <ArrowRight size={16} aria-hidden="true" />
             </a>
-            <a href="#signal-vault" className="btn btn-secondary">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onOpenSignal}
+              aria-label="Send a signal to open KAIROS chatbot"
+            >
               <Radio size={16} aria-hidden="true" />
               <span>SEND A SIGNAL</span>
-            </a>
+            </button>
           </div>
         </div>
 
