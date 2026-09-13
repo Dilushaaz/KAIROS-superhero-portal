@@ -19,11 +19,6 @@ function getAudioContext() {
       audioCtx = new AudioContextClass();
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {
-      // Handled silently if browser policy blocks initial resume
-    });
-  }
   return audioCtx;
 }
 
@@ -346,6 +341,15 @@ export function startCinematicTheme() {
   const ctx = getAudioContext();
   if (!ctx) return;
 
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => {
+      startCinematicTheme();
+    }).catch(() => {
+      // Browser autoplay policy blocked resume; awaiting gesture
+    });
+    return;
+  }
+
   try {
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
@@ -515,12 +519,14 @@ if (typeof window !== 'undefined') {
   // Graceful user gesture trigger
   const onUserGesture = () => {
     tryStartAudio();
+    window.removeEventListener('pointerdown', onUserGesture);
     window.removeEventListener('click', onUserGesture);
     window.removeEventListener('keydown', onUserGesture);
     window.removeEventListener('touchstart', onUserGesture);
     window.removeEventListener('wheel', onUserGesture);
   };
 
+  window.addEventListener('pointerdown', onUserGesture, { once: true });
   window.addEventListener('click', onUserGesture, { once: true });
   window.addEventListener('keydown', onUserGesture, { once: true });
   window.addEventListener('touchstart', onUserGesture, { once: true });

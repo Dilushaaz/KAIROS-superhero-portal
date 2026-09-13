@@ -2671,7 +2671,8 @@
 .guardian-3d-wrapper {
   position: relative;
   width: 100%;
-  height: 560px;
+  height: 100%;
+  min-height: 580px;
   user-select: none;
 }
 
@@ -2684,6 +2685,36 @@
 
 .guardian-canvas-container.is-dragging {
   cursor: grabbing;
+}
+
+/* High-tech model calibration loader */
+.guardian-model-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(6, 11, 22, 0.92);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-accent-cyan);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+  backdrop-filter: blur(8px);
+  z-index: 12;
+  pointer-events: none;
+  animation: pulseLoader 2s ease-in-out infinite;
+}
+
+@keyframes pulseLoader {
+  0%, 100% { opacity: 0.85; box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }
+  50% { opacity: 1; box-shadow: 0 0 35px rgba(0, 240, 255, 0.45); }
 }
 
 .guardian-drag-hint {
@@ -3376,6 +3407,29 @@
   letter-spacing: 0.18em;
   color: var(--color-accent-cyan);
   text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+@media (max-width: 992px) {
+  .guardian-lore-quote {
+    top: 6%;
+    right: 2%;
+    font-size: 0.72rem;
+    max-width: 140px;
+    opacity: 0.75;
+  }
+  .guardian-directive-badge {
+    top: 6%;
+    left: 2%;
+    font-size: 0.58rem;
+    opacity: 0.75;
+  }
+}
+
+@media (max-width: 640px) {
+  .guardian-lore-quote,
+  .guardian-directive-badge {
+    display: none;
+  }
 }
 
 /* Lower Integrated Command Center Grid */
