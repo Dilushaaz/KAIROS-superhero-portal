@@ -46,11 +46,12 @@ export default function Header({ onOpenSignal, onOpenVault }) {
             <Disc className="brand-icon" aria-hidden="true" />
             <span className="brand-title">KAIROS</span>
           </div>
-          <span className="brand-subtitle">THE MOMENT KEEPER</span>
+          <span className="brand-subtitle">PEOPLE • SAFETY • TOMORROW</span>
         </a>
 
         {/* Desktop Navigation */}
         <nav className="desktop-nav" aria-label="Main Navigation">
+          <a href="#comic-story" className="nav-link" onClick={playClickSound}>CHRONICLES</a>
           <a href="#origin" className="nav-link" onClick={playClickSound}>ORIGIN</a>
           <a href="#abilities" className="nav-link" onClick={playClickSound}>ABILITIES</a>
           <a href="#moment-engine" className="nav-link" onClick={playClickSound}>MOMENT ENGINE</a>
@@ -81,18 +82,18 @@ export default function Header({ onOpenSignal, onOpenVault }) {
             title="Open local Signal Vault records"
           >
             <Database size={13} aria-hidden="true" />
-            <span>VAULT LOG</span>
+            <span>SIGNAL VAULT</span>
           </button>
 
           {/* Send Signal Chat Trigger */}
           <button
             type="button"
-            className="btn btn-header-signal"
+            className="btn btn-header-signal amber-glow"
             onClick={handleSignalClick}
             aria-label="Send a signal to open KAIROS chatbot"
           >
             <Radio size={14} aria-hidden="true" />
-            <span>SEND A SIGNAL</span>
+            <span>SIGNAL KAIROS</span>
           </button>
 
           {/* Mobile Menu Toggle Button */}
@@ -111,6 +112,7 @@ export default function Header({ onOpenSignal, onOpenVault }) {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="mobile-nav-drawer" role="dialog" aria-modal="true">
+          <a href="#comic-story" className="nav-link" onClick={closeMobileMenu}>CHRONICLES</a>
           <a href="#origin" className="nav-link" onClick={closeMobileMenu}>ORIGIN</a>
           <a href="#abilities" className="nav-link" onClick={closeMobileMenu}>ABILITIES</a>
           <a href="#moment-engine" className="nav-link" onClick={closeMobileMenu}>MOMENT ENGINE</a>

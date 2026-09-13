@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import ComicStory from './components/ComicStory';
 import Origin from './components/Origin';
 import Abilities from './components/Abilities';
 import MomentEngine from './components/MomentEngine';
@@ -37,6 +38,7 @@ export default function App() {
       <Header onOpenSignal={openChat} onOpenVault={openVault} />
       <main id="main-content">
         <Hero onOpenSignal={openChat} />
+        <ComicStory onOpenSignal={openChat} />
         <Origin />
         <Abilities />
         <MomentEngine />
