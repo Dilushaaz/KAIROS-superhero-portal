@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Radio, X, Send, Disc, RefreshCw } from 'lucide-react';
 import { sendPrioritySignal } from '../utils/emailService';
+import { playClickSound, playMessageSound, playDispatchSound } from '../utils/soundService';
+import { saveSignal } from '../utils/vaultService';
 
 export default function ChatWidget({ isOpen, onClose, onOpen }) {
   const [chatData, setChatData] = useState({
@@ -8,9 +10,18 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     age: '',
     location: '',
     email: '',
+    distressLevel: 'URGENT',
     grievance: ''
   });
 
+  // Steps:
+  // 0: Name
+  // 1: Age
+  // 2: Location
+  // 3: Email
+  // 4: Threat Level Selector
+  // 5: Grievance description
+  // 6: Post-dispatch completed
   const [currentStep, setCurrentStep] = useState(0);
   const [messages, setMessages] = useState([
     {
@@ -40,13 +51,13 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
 
   // Automatically focus textarea when opened and after KAIROS finishes processing
   useEffect(() => {
-    if (isOpen && !isTyping) {
+    if (isOpen && !isTyping && currentStep !== 4) {
       const timer = setTimeout(() => {
         textareaRef.current?.focus();
       }, 60);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, isTyping]);
+  }, [isOpen, isTyping, currentStep]);
 
   // Close on Escape key
   useEffect(() => {
@@ -67,6 +78,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     const timestamp = signalPayload.timestamp || new Date().toLocaleString();
     const fullPayload = {
       ...signalPayload,
+      distressLevel: signalPayload.distressLevel || chatData.distressLevel || 'URGENT',
       timestamp
     };
 
@@ -87,14 +99,18 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     setIsTyping(false);
 
     if (response.success) {
-      setCurrentStep(5);
+      // Save signal to local Signal Vault archive
+      saveSignal(fullPayload);
+      playDispatchSound();
+
+      setCurrentStep(6);
       const confirmMsgId = getNextId('kairos');
       setMessages((prev) => [
         ...prev,
         {
           id: confirmMsgId,
           sender: 'kairos',
-          text: 'Signal successfully received. Priority dispatch confirmed. The KAIROS Guardian Network has been notified.',
+          text: 'Signal successfully received. Priority dispatch confirmed. The KAIROS Guardian Network has been notified and archived.',
           isRecord: true,
           recordData: fullPayload
         }
@@ -117,12 +133,70 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
 
   const handleRetry = (retryPayload) => {
     if (isTyping) return;
+    playClickSound();
     executeDispatch(retryPayload);
+  };
+
+  const handleSelectThreatLevel = (level) => {
+    if (isTyping) return;
+    playClickSound();
+
+    setChatData((prev) => ({ ...prev, distressLevel: level }));
+
+    const levelLabels = {
+      LOW: '🟢 LOW — GENERAL INQUIRY',
+      URGENT: '🟡 URGENT — NEED ASSISTANCE',
+      CRITICAL: '🔴 CRITICAL — IMMEDIATE INTERVENTION'
+    };
+
+    const visitorMsgId = getNextId('visitor');
+    const userMsg = {
+      id: visitorMsgId,
+      sender: 'visitor',
+      text: levelLabels[level] || level
+    };
+
+    // Mark selector as answered in messages history
+    setMessages((prev) => [
+      ...prev.map((m) => (m.isThreatSelector ? { ...m, isAnswered: true } : m)),
+      userMsg
+    ]);
+
+    setIsTyping(true);
+    setTimeout(() => {
+      setCurrentStep(5);
+      const kairosMsgId = getNextId('kairos');
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: kairosMsgId,
+          sender: 'kairos',
+          text: `Distress priority calibrated: ${level}. Now describe the situation, problem, or request in as much detail as you need.`
+        }
+      ]);
+      playMessageSound();
+      setIsTyping(false);
+    }, 600);
   };
 
   const handleSendMessage = () => {
     const trimmed = inputText.trim();
     if (!trimmed || isTyping) return;
+
+    playClickSound();
+
+    // If currently on step 4 (Threat selector) and user typed instead of clicking
+    if (currentStep === 4) {
+      const lower = trimmed.toLowerCase();
+      let matched = 'URGENT';
+      if (lower.includes('low') || lower.includes('general')) matched = 'LOW';
+      else if (lower.includes('crit') || lower.includes('immediate')) matched = 'CRITICAL';
+      else if (lower.includes('urg') || lower.includes('assist')) matched = 'URGENT';
+
+      setInputText('');
+      handleSelectThreatLevel(matched);
+      return;
+    }
 
     // Add visitor's message with a generated ID
     const visitorMsgId = getNextId('visitor');
@@ -135,8 +209,8 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     setMessages((prev) => [...prev, visitorMsg]);
     setInputText('');
 
-    if (currentStep === 4) {
-      // Step 4 (Grievance submitted) -> Execute Priority Dispatch
+    if (currentStep === 5) {
+      // Step 5 (Grievance submitted) -> Execute Priority Dispatch
       const updatedData = { ...chatData, grievance: trimmed };
       setChatData(updatedData);
       executeDispatch(updatedData);
@@ -165,6 +239,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           text: `Understood, ${name}. To assist you appropriately, what is your age?`
         }
       ]);
+      playMessageSound();
     } else if (currentStep === 1) {
       // Step 1 -> Step 2 (Age -> Location)
       const ageNum = parseInt(input, 10);
@@ -177,6 +252,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
             text: 'Please provide a valid numerical age so I can calibrate the response appropriately.'
           }
         ]);
+        playMessageSound();
         return;
       }
       setChatData((prev) => ({ ...prev, age: input }));
@@ -189,6 +265,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           text: 'Where is the moment unfolding? Tell me your location or sector.'
         }
       ]);
+      playMessageSound();
     } else if (currentStep === 2) {
       // Step 2 -> Step 3 (Location -> Email)
       setChatData((prev) => ({ ...prev, location: input }));
@@ -201,8 +278,9 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           text: 'Where can I transmit updates when your signal is processed? Please enter your email address.'
         }
       ]);
+      playMessageSound();
     } else if (currentStep === 3) {
-      // Step 3 -> Step 4 (Email -> Grievance)
+      // Step 3 -> Step 4 (Email -> Threat Level Selector)
       if (!validateEmail(input)) {
         setMessages((prev) => [
           ...prev,
@@ -212,6 +290,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
             text: "That signal address doesn't appear valid. Please enter a valid email address."
           }
         ]);
+        playMessageSound();
         return;
       }
       setChatData((prev) => ({ ...prev, email: input }));
@@ -221,9 +300,11 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
         {
           id: kairosMsgId,
           sender: 'kairos',
-          text: 'Now tell me what happened. Describe the situation, problem, or request in as much detail as you need.'
+          text: 'Signal address confirmed. Please designate the distress priority / threat level for this transmission:',
+          isThreatSelector: true
         }
       ]);
+      playMessageSound();
     } else {
       // Post-confirmation queries
       setMessages((prev) => [
@@ -234,6 +315,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           text: 'Your signal remains secured in the Guardian Network. A guardian node will monitor your coordinates.'
         }
       ]);
+      playMessageSound();
     }
   };
 
@@ -244,6 +326,10 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     }
   };
 
+  const threatAuraClass = chatData.distressLevel
+    ? `threat-aura-${chatData.distressLevel.toLowerCase()}`
+    : 'threat-aura-default';
+
   return (
     <>
       {/* Floating Trigger Button at bottom-right */}
@@ -251,7 +337,10 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
         <button
           type="button"
           className="chat-floating-trigger"
-          onClick={onOpen}
+          onClick={() => {
+            playClickSound();
+            onOpen();
+          }}
           aria-label="Open KAIROS Signal Messenger"
           aria-haspopup="dialog"
         >
@@ -265,7 +354,10 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
       {isOpen && (
         <div
           className="chat-mobile-backdrop"
-          onClick={onClose}
+          onClick={() => {
+            playClickSound();
+            onClose();
+          }}
           aria-hidden="true"
         />
       )}
@@ -278,7 +370,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           aria-modal="true"
           aria-label="KAIROS Guardian Signal Interface"
         >
-          <div className="glass-card chat-window">
+          <div className={`glass-card chat-window ${threatAuraClass}`}>
             {/* Header */}
             <div className="chat-header">
               <div className="chat-header-identity">
@@ -299,7 +391,10 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                 <button
                   type="button"
                   className="chat-close-btn"
-                  onClick={onClose}
+                  onClick={() => {
+                    playClickSound();
+                    onClose();
+                  }}
                   aria-label="Close signal chat"
                 >
                   <X size={18} />
@@ -317,10 +412,43 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                   <div className="chat-msg-bubble">
                     {msg.text}
 
-                    {/* Step 5 Priority Signal Summary Record */}
+                    {/* Step 4 Threat Level Selector Interactive Buttons */}
+                    {msg.isThreatSelector && !msg.isAnswered && currentStep === 4 && (
+                      <div className="threat-selector-group">
+                        <button
+                          type="button"
+                          className="threat-btn threat-btn-low"
+                          onClick={() => handleSelectThreatLevel('LOW')}
+                          disabled={isTyping}
+                        >
+                          <span className="threat-dot dot-low"></span>
+                          <span>🟢 LOW — GENERAL INQUIRY</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="threat-btn threat-btn-urgent"
+                          onClick={() => handleSelectThreatLevel('URGENT')}
+                          disabled={isTyping}
+                        >
+                          <span className="threat-dot dot-urgent"></span>
+                          <span>🟡 URGENT — NEED ASSISTANCE</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="threat-btn threat-btn-critical"
+                          onClick={() => handleSelectThreatLevel('CRITICAL')}
+                          disabled={isTyping}
+                        >
+                          <span className="threat-dot dot-critical"></span>
+                          <span>🔴 CRITICAL — IMMEDIATE INTERVENTION</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Step 6 Priority Signal Summary Record */}
                     {msg.isRecord && msg.recordData && (
                       <div className="signal-record-box">
-                        <span className="record-box-header">SIGNAL RECORD</span>
+                        <span className="record-box-header">SIGNAL RECORD // KAIROS VAULT</span>
                         <div className="record-box-divider"></div>
 
                         <div className="record-line">
@@ -338,6 +466,15 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                         <div className="record-line">
                           <span className="record-line-label">EMAIL:</span>
                           <span className="record-line-value">{msg.recordData.email}</span>
+                        </div>
+                        <div className="record-line">
+                          <span className="record-line-label">THREAT PRIORITY:</span>
+                          <span className={`record-line-value priority-${(msg.recordData.distressLevel || 'urgent').toLowerCase()}`}>
+                            {msg.recordData.distressLevel === 'CRITICAL' && '🔴 CRITICAL'}
+                            {msg.recordData.distressLevel === 'URGENT' && '🟡 URGENT'}
+                            {msg.recordData.distressLevel === 'LOW' && '🟢 LOW'}
+                            {!['CRITICAL', 'URGENT', 'LOW'].includes(msg.recordData.distressLevel) && (msg.recordData.distressLevel || 'URGENT')}
+                          </span>
                         </div>
 
                         <div className="record-status-group">
@@ -399,14 +536,16 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                 <textarea
                   ref={textareaRef}
                   className="chat-textarea"
-                  rows={currentStep === 4 ? 2 : 1}
+                  rows={currentStep === 5 ? 2 : 1}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={
                     isTyping
                       ? 'KAIROS is processing...'
-                      : currentStep === 5
+                      : currentStep === 4
+                      ? 'Select threat level above or type it...'
+                      : currentStep === 6
                       ? 'Transmit further updates...'
                       : 'Transmit your response...'
                   }

@@ -1681,4 +1681,837 @@
   transform: none;
 }
 
+/* =========================================
+   PHASE 5: INNOVATION & POLISH SYSTEMS
+   ========================================= */
+
+/* 1. Header Audio Toggle & Vault Quick Button */
+.btn-sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(15, 19, 28, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-sound-toggle.active {
+  color: var(--color-accent-cyan);
+  border-color: var(--border-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+}
+
+.btn-sound-toggle.active:hover {
+  background: var(--color-accent-cyan-dim);
+  box-shadow: var(--glow-cyan-sm);
+}
+
+.btn-sound-toggle.muted {
+  color: var(--color-text-muted);
+  border-color: rgba(255, 255, 255, 0.08);
+  opacity: 0.7;
+}
+
+.btn-sound-toggle.muted:hover {
+  opacity: 1;
+  color: var(--color-text-secondary);
+}
+
+.btn-header-vault {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(15, 19, 28, 0.8);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-header-vault:hover {
+  color: var(--color-accent-cyan);
+  border-color: var(--border-cyan);
+  background: var(--color-accent-cyan-dim);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+}
+
+.vault-action-buttons {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 2. Threat Level Selector & Dynamic Aura */
+.threat-selector-group {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.threat-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  background: rgba(6, 8, 13, 0.85);
+  border: 1px solid var(--border-subtle);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.threat-btn:hover:not(:disabled) {
+  transform: translateX(4px);
+}
+
+.threat-btn-low {
+  border-color: rgba(0, 255, 136, 0.3);
+}
+.threat-btn-low:hover:not(:disabled) {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: var(--color-status-online);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+}
+
+.threat-btn-urgent {
+  border-color: rgba(255, 184, 0, 0.3);
+}
+.threat-btn-urgent:hover:not(:disabled) {
+  background: rgba(255, 184, 0, 0.12);
+  border-color: var(--color-status-warning);
+  box-shadow: 0 0 15px rgba(255, 184, 0, 0.25);
+}
+
+.threat-btn-critical {
+  border-color: rgba(255, 59, 48, 0.35);
+}
+.threat-btn-critical:hover:not(:disabled) {
+  background: rgba(255, 59, 48, 0.15);
+  border-color: #FF3B30;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.35);
+}
+
+.threat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-low { background: #00FF88; box-shadow: 0 0 6px #00FF88; }
+.dot-urgent { background: #FFB800; box-shadow: 0 0 6px #FFB800; }
+.dot-critical { background: #FF3B30; box-shadow: 0 0 8px #FF3B30; }
+
+/* Dynamic Chat Window Auras */
+.chat-window.threat-aura-default {
+  border-color: var(--border-cyan);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.15);
+}
+
+.chat-window.threat-aura-low {
+  border-color: rgba(0, 255, 136, 0.45);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 255, 136, 0.25);
+}
+
+.chat-window.threat-aura-urgent {
+  border-color: rgba(255, 184, 0, 0.55);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 184, 0, 0.3);
+}
+
+.chat-window.threat-aura-critical {
+  border-color: rgba(255, 59, 48, 0.7);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 59, 48, 0.4);
+  animation: auraPulseCritical 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes auraPulseCritical {
+  0% {
+    box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 59, 48, 0.3);
+    border-color: rgba(255, 59, 48, 0.5);
+  }
+  100% {
+    box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.8), 0 0 65px rgba(255, 59, 48, 0.55);
+    border-color: #FF3B30;
+  }
+}
+
+.record-line-value.priority-low { color: #00FF88; font-weight: 700; }
+.record-line-value.priority-urgent { color: #FFB800; font-weight: 700; }
+.record-line-value.priority-critical { color: #FF3B30; font-weight: 700; text-shadow: 0 0 10px rgba(255, 59, 48, 0.4); }
+
+/* 3. Live KAIROS Defense Radar Section */
+.threat-radar-section {
+  position: relative;
+  background: radial-gradient(circle at 50% 30%, rgba(0, 240, 255, 0.04), transparent 70%);
+}
+
+.radar-display-wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+  border: 1px solid var(--border-cyan);
+  box-shadow: 0 0 40px rgba(0, 240, 255, 0.06);
+}
+
+.radar-header-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.radar-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radar-status-badge .hud-title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-cyan);
+}
+
+.radar-header-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.hud-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.hud-metric.highlight-cyan {
+  color: var(--color-accent-cyan);
+}
+
+.radar-main-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.radar-screen-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.radar-svg {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  overflow: visible;
+}
+
+/* SVG Radar Elements */
+.radar-ring {
+  fill: none;
+  stroke: rgba(0, 240, 255, 0.2);
+  stroke-width: 1.2;
+}
+
+.radar-ring.outer {
+  stroke: rgba(0, 240, 255, 0.45);
+  stroke-dasharray: 4 4;
+}
+
+.radar-ring.inner {
+  stroke: rgba(0, 240, 255, 0.35);
+}
+
+.radar-axis {
+  stroke: rgba(0, 240, 255, 0.22);
+  stroke-width: 1;
+}
+
+.radar-axis-diagonal {
+  stroke: rgba(0, 240, 255, 0.1);
+  stroke-width: 0.8;
+  stroke-dasharray: 3 3;
+}
+
+.radar-text-label {
+  fill: rgba(0, 240, 255, 0.5);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.radar-cardinal {
+  fill: var(--color-accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.radar-center-blip {
+  fill: #FFFFFF;
+  box-shadow: 0 0 10px #FFFFFF;
+}
+
+.radar-center-pulse {
+  fill: none;
+  stroke: var(--color-accent-cyan);
+  stroke-width: 1.5;
+  animation: radarPingWave 2s infinite ease-out;
+  transform-origin: 220px 220px;
+}
+
+/* Rotating Radar Sweep Beam */
+.radar-sweep-group {
+  transform-origin: 220px 220px;
+  animation: spinClockwise 5.5s linear infinite;
+}
+
+.radar-sweep-beam {
+  fill: url(#sweepGradient);
+  opacity: 0.35;
+}
+
+.radar-sweep-line {
+  stroke: var(--color-accent-cyan);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px var(--color-accent-cyan));
+}
+
+/* Radar Pings */
+.radar-ping-group .ping-point {
+  fill: var(--color-accent-cyan);
+  transition: all 0.2s ease;
+}
+
+.radar-ping-group .ping-pulse-ring {
+  fill: none;
+  stroke: var(--color-accent-cyan);
+  stroke-width: 1.5;
+  animation: radarPingWave 2.8s infinite ease-out;
+  transform-origin: center;
+}
+
+.radar-ping-group.alert .ping-point {
+  fill: #FF3B30;
+}
+.radar-ping-group.alert .ping-pulse-ring {
+  stroke: #FF3B30;
+  animation-duration: 1.8s;
+}
+
+.radar-ping-group.core .ping-point {
+  fill: #00FF88;
+}
+.radar-ping-group.core .ping-pulse-ring {
+  stroke: #00FF88;
+}
+
+.radar-ping-group.selected .ping-point {
+  fill: #FFFFFF;
+  stroke: var(--color-accent-cyan);
+  stroke-width: 2;
+}
+
+.ping-svg-label {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+@keyframes radarPingWave {
+  0% {
+    r: 4px;
+    opacity: 1;
+  }
+  100% {
+    r: 22px;
+    opacity: 0;
+  }
+}
+
+/* Radar Telemetry Sidebar */
+.radar-telemetry-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.telemetry-box {
+  background: rgba(6, 8, 13, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.telemetry-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-accent-cyan);
+  letter-spacing: 0.15em;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.telemetry-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.detail-label {
+  color: var(--color-text-muted);
+}
+
+.detail-value {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.detail-value.mono {
+  color: var(--color-accent-cyan);
+}
+
+.telemetry-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.telemetry-stat {
+  background: rgba(15, 19, 28, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.radar-scan-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* 4. Signal Vault Local Modal Dashboard */
+.vault-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 13, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.vault-modal-window {
+  width: 100%;
+  max-width: 860px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 19, 28, 0.97);
+  border: 1px solid var(--border-cyan);
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.18);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.vault-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: rgba(6, 8, 13, 0.95);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.vault-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.vault-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-cyan-dim);
+  border: 1px solid var(--border-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-cyan);
+}
+
+.vault-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.vault-modal-sub {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-cyan);
+}
+
+.vault-security-notice {
+  background: rgba(0, 240, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.12);
+  padding: 0.6rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.vault-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  background: rgba(10, 13, 20, 0.9);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.filter-btn {
+  background: rgba(15, 19, 28, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-btn.active {
+  background: var(--color-accent-cyan);
+  color: #06080D;
+  border-color: var(--color-accent-cyan);
+  font-weight: 700;
+}
+
+.vault-count-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.vault-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vault-signal-card {
+  background: rgba(10, 14, 22, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: border-color var(--transition-fast);
+}
+
+.vault-signal-card:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.vault-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.vault-signal-id-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vault-signal-id {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent-cyan);
+  letter-spacing: 0.1em;
+}
+
+.vault-priority-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.06em;
+}
+
+.vault-priority-badge.critical {
+  background: rgba(255, 59, 48, 0.15);
+  color: #FF3B30;
+  border: 1px solid rgba(255, 59, 48, 0.4);
+}
+
+.vault-priority-badge.urgent {
+  background: rgba(255, 184, 0, 0.15);
+  color: #FFB800;
+  border: 1px solid rgba(255, 184, 0, 0.4);
+}
+
+.vault-priority-badge.low {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00FF88;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.vault-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-status-online);
+}
+
+.vault-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  background: rgba(6, 8, 13, 0.5);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.vault-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.meta-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+.meta-value {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: #FFFFFF;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.meta-value.mono {
+  font-family: var(--font-mono);
+  color: var(--color-accent-cyan);
+}
+
+.vault-grievance-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.grievance-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.grievance-text {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  background: rgba(6, 8, 13, 0.35);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--color-accent-cyan);
+}
+
+.vault-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+}
+
+.vault-empty-state p {
+  color: var(--color-accent-cyan);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.vault-empty-state span {
+  font-size: 0.75rem;
+}
+
+.vault-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: rgba(6, 8, 13, 0.95);
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.vault-footer-telemetry {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+}
+
+.vault-footer-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+}
+
+/* Phase 5 Responsive Adjustments */
+@media (max-width: 960px) {
+  .radar-main-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  .vault-meta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sound-toggle-text {
+    display: none;
+  }
+  .btn-sound-toggle {
+    padding: 0.45rem;
+  }
+  .btn-header-vault span {
+    display: none;
+  }
+  .btn-header-vault {
+    padding: 0.45rem 0.6rem;
+  }
+  .vault-meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .vault-modal-window {
+    max-height: 94vh;
+  }
+  .vault-modal-header {
+    padding: 1rem;
+  }
+  .vault-list-container {
+    padding: 1rem;
+  }
+}
+
+
 

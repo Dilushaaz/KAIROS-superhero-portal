@@ -27,6 +27,7 @@ export const ENABLE_MOCK_EMAIL = import.meta.env.VITE_ENABLE_MOCK_EMAIL !== 'fal
  * @param {string} payload.location
  * @param {string} payload.email
  * @param {string} payload.grievance
+ * @param {string} [payload.distressLevel]
  * @param {string} payload.timestamp
  * @returns {Promise<{ success: boolean, mock?: boolean, result?: any, error?: any }>}
  */
