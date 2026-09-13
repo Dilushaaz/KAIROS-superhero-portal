@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Radio, X, Send, Disc } from 'lucide-react';
+import { Radio, X, Send, Disc, RefreshCw } from 'lucide-react';
+import { sendPrioritySignal } from '../utils/emailService';
 
 export default function ChatWidget({ isOpen, onClose, onOpen }) {
   const [chatData, setChatData] = useState({
@@ -62,6 +63,63 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   };
 
+  const executeDispatch = async (signalPayload) => {
+    const timestamp = signalPayload.timestamp || new Date().toLocaleString();
+    const fullPayload = {
+      ...signalPayload,
+      timestamp
+    };
+
+    // 1. Temporary encrypting and transmission message
+    const encryptMsgId = getNextId('kairos');
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: encryptMsgId,
+        sender: 'kairos',
+        text: '⚡ Encrypting and transmitting priority signal to the KAIROS Guardian Network...'
+      }
+    ]);
+    setIsTyping(true);
+
+    // 2. Invoke email service (mock or live EmailJS)
+    const response = await sendPrioritySignal(fullPayload);
+    setIsTyping(false);
+
+    if (response.success) {
+      setCurrentStep(5);
+      const confirmMsgId = getNextId('kairos');
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: confirmMsgId,
+          sender: 'kairos',
+          text: 'Signal successfully received. Priority dispatch confirmed. The KAIROS Guardian Network has been notified.',
+          isRecord: true,
+          recordData: fullPayload
+        }
+      ]);
+    } else {
+      // Failure state with retry option
+      const errorMsgId = getNextId('kairos');
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: errorMsgId,
+          sender: 'kairos',
+          text: 'Signal transmission interrupted. The priority dispatch could not be completed.',
+          isError: true,
+          retryPayload: fullPayload
+        }
+      ]);
+    }
+  };
+
+  const handleRetry = (retryPayload) => {
+    if (isTyping) return;
+    executeDispatch(retryPayload);
+  };
+
   const handleSendMessage = () => {
     const trimmed = inputText.trim();
     if (!trimmed || isTyping) return;
@@ -76,12 +134,19 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
 
     setMessages((prev) => [...prev, visitorMsg]);
     setInputText('');
-    setIsTyping(true);
 
-    setTimeout(() => {
-      processNextStep(trimmed);
-      setIsTyping(false);
-    }, 600);
+    if (currentStep === 4) {
+      // Step 4 (Grievance submitted) -> Execute Priority Dispatch
+      const updatedData = { ...chatData, grievance: trimmed };
+      setChatData(updatedData);
+      executeDispatch(updatedData);
+    } else {
+      setIsTyping(true);
+      setTimeout(() => {
+        processNextStep(trimmed);
+        setIsTyping(false);
+      }, 600);
+    }
   };
 
   const processNextStep = (input) => {
@@ -159,21 +224,6 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
           text: 'Now tell me what happened. Describe the situation, problem, or request in as much detail as you need.'
         }
       ]);
-    } else if (currentStep === 4) {
-      // Step 4 -> Step 5 (Grievance -> Confirmation)
-      const updatedData = { ...chatData, grievance: input };
-      setChatData(updatedData);
-      setCurrentStep(5);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: kairosMsgId,
-          sender: 'kairos',
-          text: `Signal received, ${chatData.name || 'Citizen'}. The moment has been recorded. Transmitting your details to the KAIROS Guardian Network...`,
-          isRecord: true,
-          recordData: updatedData
-        }
-      ]);
     } else {
       // Post-confirmation queries
       setMessages((prev) => [
@@ -181,7 +231,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
         {
           id: kairosMsgId,
           sender: 'kairos',
-          text: 'Your signal remains locked in the Guardian Vault. A guardian node will monitor the timeline.'
+          text: 'Your signal remains secured in the Guardian Network. A guardian node will monitor your coordinates.'
         }
       ]);
     }
@@ -267,7 +317,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                   <div className="chat-msg-bubble">
                     {msg.text}
 
-                    {/* Step 5 Compact Summary Record */}
+                    {/* Step 5 Priority Signal Summary Record */}
                     {msg.isRecord && msg.recordData && (
                       <div className="signal-record-box">
                         <span className="record-box-header">SIGNAL RECORD</span>
@@ -293,13 +343,31 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
                         <div className="record-status-group">
                           <div className="record-line">
                             <span className="record-line-label">STATUS:</span>
-                            <span className="record-line-value status-highlight">SIGNAL RECEIVED</span>
+                            <span className="record-line-value status-highlight">PRIORITY SIGNAL DISPATCHED</span>
                           </div>
                           <div className="record-line">
-                            <span className="record-line-label">MOMENT:</span>
-                            <span className="record-line-value pending-highlight">ANALYSIS PENDING</span>
+                            <span className="record-line-label">TIMESTAMP:</span>
+                            <span className="record-line-value" style={{ fontSize: '0.7rem' }}>
+                              {msg.recordData.timestamp}
+                            </span>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Failure Retry Box */}
+                    {msg.isError && msg.retryPayload && (
+                      <div className="signal-error-box">
+                        <button
+                          type="button"
+                          className="btn-retry-dispatch"
+                          onClick={() => handleRetry(msg.retryPayload)}
+                          disabled={isTyping}
+                          aria-label="Retry Priority Dispatch"
+                        >
+                          <RefreshCw size={13} aria-hidden="true" />
+                          <span>RETRY DISPATCH</span>
+                        </button>
                       </div>
                     )}
                   </div>
