@@ -22,8 +22,8 @@ export default function Kairos3DGuardian() {
     const width = container.clientWidth || 560;
     const height = container.clientHeight || 680;
 
-    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-    camera.position.set(0, 0.75, 4.3);
+    const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+    camera.position.set(0, 1.25, 5.0);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -39,7 +39,7 @@ export default function Kairos3DGuardian() {
     container.appendChild(renderer.domElement);
 
     // 2. 5-Point Studio Cinematic Lighting Rig
-    const ambientLight = new THREE.AmbientLight(0x060D1E, 2.6);
+    const ambientLight = new THREE.AmbientLight(0x060D1E, 2.4);
     scene.add(ambientLight);
 
     // Key Light: Cool Electric Cyan
@@ -51,12 +51,12 @@ export default function Kairos3DGuardian() {
     scene.add(keyLight);
 
     // Rim Light: Intense Royal Blue from rear-left for razor silhouette separation
-    const rimLight = new THREE.DirectionalLight(0x1A6CFF, 5.8);
+    const rimLight = new THREE.DirectionalLight(0x1A6CFF, 5.2);
     rimLight.position.set(-4.8, 3.8, -4.2);
     scene.add(rimLight);
 
     // Secondary Back Rim: Cool Indigo
-    const backRim = new THREE.DirectionalLight(0x4A8CFF, 3.2);
+    const backRim = new THREE.DirectionalLight(0x4A8CFF, 3.0);
     backRim.position.set(3.5, 2.5, -3.8);
     scene.add(backRim);
 
@@ -67,187 +67,56 @@ export default function Kairos3DGuardian() {
 
     // Chest Core Pulsing Light
     const emblemLight = new THREE.PointLight(0x00F0FF, 3.5, 4.5);
-    emblemLight.position.set(0, 0.45, 0.65);
+    emblemLight.position.set(0, 1.68, 0.65);
     scene.add(emblemLight);
 
     // Ground Promontory Bounce Light
-    const rockBounceLight = new THREE.PointLight(0x1A6CFF, 2.0, 3.5);
-    rockBounceLight.position.set(0, -0.9, 0.85);
+    const rockBounceLight = new THREE.PointLight(0x1A6CFF, 1.8, 3.5);
+    rockBounceLight.position.set(0, -0.4, 0.85);
     scene.add(rockBounceLight);
 
     // 3. Master Stage Group
     const stageGroup = new THREE.Group();
     scene.add(stageGroup);
 
-    // Ground Cybernetic Pedestal Base
-    const pedestalGroup = new THREE.Group();
-    pedestalGroup.position.set(0, -0.95, 0);
-
-    const baseRing = new THREE.Mesh(
-      new THREE.TorusGeometry(1.15, 0.015, 12, 64),
-      new THREE.MeshStandardMaterial({
-        color: 0x00F0FF,
-        emissive: 0x00F0FF,
-        emissiveIntensity: 2.5,
-        roughness: 0.2
-      })
-    );
-    baseRing.rotation.x = Math.PI / 2;
-    pedestalGroup.add(baseRing);
-
-    const innerRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.85, 0.008, 8, 48),
-      new THREE.MeshStandardMaterial({
-        color: 0x1A6CFF,
-        emissive: 0x1A6CFF,
-        emissiveIntensity: 1.8,
-        roughness: 0.3
-      })
-    );
-    innerRing.rotation.x = Math.PI / 2;
-    pedestalGroup.add(innerRing);
-
-    const platform = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.2, 1.25, 0.08, 32),
-      new THREE.MeshStandardMaterial({
-        color: 0x080E1A,
-        metalness: 0.88,
-        roughness: 0.22
-      })
-    );
-    platform.position.y = -0.04;
-    platform.receiveShadow = true;
-    pedestalGroup.add(platform);
-
-    stageGroup.add(pedestalGroup);
-
-    // Dynamic animation & material trackers
-    let mixer = null;
+    // Track dynamic meshes inside the loaded GLB
     let capeMesh = null;
     const plasmaMaterials = [];
 
-    // 4. Load the Candidate 3D Guardian Model (Xbot candidate test copy)
+    // 4. Load the Genuine 3D KAIROS Guardian GLB Model
     const loader = new GLTFLoader();
     loader.load(
-      '/models/kairos-xbot-test.glb',
+      '/models/kairos-guardian.glb',
       (gltf) => {
         const model = gltf.scene;
         model.name = 'KAIROS_3D_Model';
-        model.position.set(0, -0.94, 0);
-        model.scale.set(1.18, 1.18, 1.18);
-
-        // KAIROS PBR Armor & Undersuit Custom Materials
-        const obsidianArmorMat = new THREE.MeshStandardMaterial({
-          color: 0x0A1324,
-          metalness: 0.94,
-          roughness: 0.16,
-          name: 'KAIROS_ObsidianArmor'
-        });
-
-        const carbonUndersuitMat = new THREE.MeshStandardMaterial({
-          color: 0x050810,
-          metalness: 0.65,
-          roughness: 0.45,
-          name: 'KAIROS_CarbonUndersuit'
-        });
-
-        let spineBone = null;
-        let headBone = null;
+        model.position.set(0, -0.32, 0);
+        model.scale.set(1.15, 1.15, 1.15);
 
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
 
-            // Apply KAIROS obsidian armor & undersuit materials to Xbot meshes
-            if (child.name === 'Mesh.001' || (child.material && child.material.name.includes('HighLimbs'))) {
-              child.material = obsidianArmorMat;
-            } else if (child.name === 'Mesh' || (child.material && child.material.name.includes('Joints'))) {
-              child.material = carbonUndersuitMat;
-            }
-
             if (child.name === 'GuardianCapeMesh') {
               capeMesh = child;
             }
 
-            if (child.material && child.material.emissive && child.material.emissive.getHex() > 0) {
-              plasmaMaterials.push(child.material);
+            // Collect any emissive / plasma materials for dynamic pulsation
+            if (child.material) {
+              if (child.material.emissive && child.material.emissive.getHex() > 0) {
+                plasmaMaterials.push(child.material);
+              }
             }
           }
-
-          if (child.isBone) {
-            if (child.name === 'mixamorigSpine2') spineBone = child;
-            if (child.name === 'mixamorigHead') headBone = child;
-          }
         });
-
-        // Add KAIROS Glowing Energy Core to chest bone (mixamorigSpine2)
-        if (spineBone) {
-          const chestCore = new THREE.Group();
-
-          const coreGlow = new THREE.Mesh(
-            new THREE.SphereGeometry(0.045, 16, 16),
-            new THREE.MeshStandardMaterial({
-              color: 0x00F0FF,
-              emissive: 0x00F0FF,
-              emissiveIntensity: 4.5,
-              roughness: 0.1
-            })
-          );
-          coreGlow.position.set(0, 0.12, 0.15);
-          plasmaMaterials.push(coreGlow.material);
-          chestCore.add(coreGlow);
-
-          const coreRing = new THREE.Mesh(
-            new THREE.TorusGeometry(0.065, 0.009, 8, 24),
-            new THREE.MeshStandardMaterial({
-              color: 0x1A6CFF,
-              emissive: 0x00F0FF,
-              emissiveIntensity: 2.8,
-              metalness: 0.9,
-              roughness: 0.1
-            })
-          );
-          coreRing.position.set(0, 0.12, 0.145);
-          plasmaMaterials.push(coreRing.material);
-          chestCore.add(coreRing);
-
-          spineBone.add(chestCore);
-        }
-
-        // Add Electric Visor Slit Glow to head bone (mixamorigHead)
-        if (headBone) {
-          const visorGlow = new THREE.Mesh(
-            new THREE.BoxGeometry(0.12, 0.016, 0.04),
-            new THREE.MeshStandardMaterial({
-              color: 0x00F0FF,
-              emissive: 0x00F0FF,
-              emissiveIntensity: 4.2,
-              roughness: 0.1
-            })
-          );
-          visorGlow.position.set(0, 0.105, 0.12);
-          plasmaMaterials.push(visorGlow.material);
-          headBone.add(visorGlow);
-        }
-
-        // Set up AnimationMixer for fluid idle breathing animation
-        if (gltf.animations && gltf.animations.length > 0) {
-          mixer = new THREE.AnimationMixer(model);
-          const idleClip = THREE.AnimationClip.findByName(gltf.animations, 'idle') || gltf.animations[0];
-          if (idleClip) {
-            const idleAction = mixer.clipAction(idleClip);
-            idleAction.setEffectiveTimeScale(0.85); // Heroic, calm breathing pace
-            idleAction.play();
-          }
-        }
 
         stageGroup.add(model);
         setIsModelLoaded(true);
       },
       undefined,
       (err) => {
-        console.error('Error loading /models/kairos-xbot-test.glb:', err);
+        console.error('Error loading /models/kairos-guardian.glb:', err);
       }
     );
 
@@ -338,11 +207,6 @@ export default function Kairos3DGuardian() {
       const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
-      // Skeletal animation mixer update
-      if (mixer) {
-        mixer.update(delta);
-      }
-
       // Cinematic Reveal Transition
       if (revealProgress < 1.0) {
         revealProgress = Math.min(1.0, revealProgress + delta / revealDuration);
@@ -368,15 +232,14 @@ export default function Kairos3DGuardian() {
         if (Math.abs(rotationVelocityX) < 0.0008) rotationVelocityX = 0;
       }
 
-      // Subtle base pedestal ring rotation
-      if (baseRing) {
-        baseRing.rotation.z += 0.004;
-      }
-      if (innerRing) {
-        innerRing.rotation.z -= 0.006;
+      // Living idle breathing oscillation
+      const breath = Math.sin(elapsedTime * 1.5) * 0.028;
+      const kairosModel = stageGroup.getObjectByName('KAIROS_3D_Model');
+      if (kairosModel) {
+        kairosModel.position.y = -0.32 + breath;
       }
 
-      // Robust cape wind flutter check (only if cape mesh exists in model)
+      // Cape Wind Flutter (Procedural wave dynamics)
       if (capeMesh && capeMesh.geometry && capeMesh.geometry.attributes.position) {
         const posAttr = capeMesh.geometry.attributes.position;
         const capeWidthSegments = 16;
