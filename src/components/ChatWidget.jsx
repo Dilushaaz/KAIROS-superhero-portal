@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Radio, X, Send, Disc, RefreshCw } from 'lucide-react';
 import { sendPrioritySignal } from '../utils/emailService';
-import { playClickSound, playMessageSound, playDispatchSound } from '../utils/soundService';
+import { playClickSound, playMessageSound, playDispatchSound, playThreatLevelSound } from '../utils/soundService';
 import { saveSignal } from '../utils/vaultService';
 
 export default function ChatWidget({ isOpen, onClose, onOpen }) {
@@ -140,6 +140,7 @@ export default function ChatWidget({ isOpen, onClose, onOpen }) {
   const handleSelectThreatLevel = (level) => {
     if (isTyping) return;
     playClickSound();
+    playThreatLevelSound(level);
 
     setChatData((prev) => ({ ...prev, distressLevel: level }));
 

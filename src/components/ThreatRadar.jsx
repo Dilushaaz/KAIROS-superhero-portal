@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Radar, Radio, Wifi, RefreshCw } from 'lucide-react';
-import { playClickSound } from '../utils/soundService';
+import { playClickSound, playRadarSweepSound } from '../utils/soundService';
 
 const RADAR_PINGS = [
   { id: 'p1', x: 210, y: 150, label: 'KAIROS CORE NODE', status: 'ONLINE', sector: 'SEC-07', type: 'core' },
@@ -29,6 +29,7 @@ export default function ThreatRadar() {
 
   const handleManualScan = () => {
     playClickSound();
+    playRadarSweepSound();
     setPulseCount((prev) => prev + 5);
   };
 

@@ -14,6 +14,11 @@
   --color-accent-cyan-dim: rgba(0, 240, 255, 0.12);
   --color-accent-cyan-glow: rgba(0, 240, 255, 0.25);
 
+  --color-accent-blue: #1A6CFF;
+  --color-accent-blue-hover: #3884FF;
+  --color-accent-blue-glow: rgba(26, 108, 255, 0.45);
+  --color-accent-blue-dim: rgba(26, 108, 255, 0.16);
+
   --color-accent-violet: #8A2BE2;
   --color-accent-violet-hover: #9E47EB;
   --color-accent-violet-dim: rgba(138, 43, 226, 0.14);
@@ -48,6 +53,7 @@
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-logo: 'Orbitron', 'Outfit', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Spacing Scale */

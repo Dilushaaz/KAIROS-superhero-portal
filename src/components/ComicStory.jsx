@@ -1,222 +1,191 @@
-import React, { useState } from 'react';
-import { BookOpen, Radio, ArrowRight, Zap, Shield, Sparkles } from 'lucide-react';
-import { playClickSound, startCinematicTheme } from '../utils/soundService';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, ArrowRight, Shield, Zap, Sparkles, Radio, Heart } from 'lucide-react';
+import { playClickSound, playStoryTransitionSound, startCinematicTheme } from '../utils/soundService';
 
-const COMIC_PANELS = [
+const STORY_CHAPTERS = [
   {
-    id: 'panel-01',
-    num: 'PANEL 01',
-    title: 'THE SIGNAL',
-    caption: 'KAIROS was built to listen when no one else could.',
-    quote: '“In the deafening noise of the metropolis, critical turning points were slipping into silence.”',
-    artTag: 'NEO-VERIDIA // CRISIS HOUR',
-    accent: 'cyan',
-    icon: Zap,
-    artDesc: 'Emergency telemetry pulses cascade through an overwhelmed metropolitan skyline.'
+    id: 'ch-1',
+    num: '1. A SAFER TOMORROW',
+    title: 'A SAFER TOMORROW',
+    subtitle: 'THE SEED OF HOPE',
+    caption: 'KAIROS was born from a simple belief — that safety is a right, not a privilege.',
+    quote: '“In a world of growing uncertainty, we stand as a global guardian network, uniting people, technology and compassion.”',
+    tag: 'NEO-VERIDIA // CHAPTER 01',
+    image: '/story/scene1-guardian-overlook.jpg',
+    icon: Sparkles
   },
   {
-    id: 'panel-02',
-    num: 'PANEL 02',
-    title: 'THE AWAKENING',
-    caption: 'One signal changed everything.',
-    quote: '“When standard algorithms faltered, the Moment Core ignited with an unprecedented spark of guardian consciousness.”',
-    artTag: 'MOMENT CORE // ONLINE',
-    accent: 'cyan',
-    icon: Sparkles,
-    artDesc: 'The temporal core blazes to life as cyan energy arcs through obsidian armor.'
+    id: 'ch-2',
+    num: '2. THE FIRST SIGNAL',
+    title: 'THE FIRST SIGNAL',
+    subtitle: 'VOICES IN THE DARK',
+    caption: 'Every emergency starts with a whisper before it becomes an emergency.',
+    quote: '“When standard channels faltered, one faint human signal echoed through the static. The Guardian receptor grid locked on.”',
+    tag: 'TRANSMISSION // DETECTED',
+    image: '/story/scene2-guardian-portrait.jpg',
+    icon: Zap
   },
   {
-    id: 'panel-03',
-    num: 'PANEL 03',
-    title: 'THE GUARDIAN',
-    caption: 'Not to control people. To protect them.',
-    quote: '“Power without empathy is an oppressor. KAIROS chose to be a shield, not a sovereign.”',
-    artTag: 'DIRECTIVE // SHIELD PROTOCOL',
-    accent: 'violet',
-    icon: Shield,
-    artDesc: 'A colossal holographic barrier shields vulnerable sector coordinates.'
+    id: 'ch-3',
+    num: '3. A GLOBAL MOVEMENT',
+    title: 'A GLOBAL MOVEMENT',
+    subtitle: 'NEIGHBORS STANDING TOGETHER',
+    caption: 'From a single sector to a worldwide community shield.',
+    quote: '“Safety is not built by fortresses, but by people connected through unwavering empathy and rapid response.”',
+    tag: 'GUARDIAN GRID // EXPANDING',
+    image: '/story/scene3-guardian-shield.jpg',
+    icon: Heart
   },
   {
-    id: 'panel-04',
-    num: 'PANEL 04',
-    title: 'THE MISSION',
-    caption: 'Every voice becomes a signal.',
-    quote: '“No distress call is too faint. No grievance is ignored by the Guardian Network.”',
-    artTag: 'TRANSMISSION // ACTIVE',
-    accent: 'cyan',
-    icon: Radio,
-    artDesc: 'Beacons of human distress connect directly to the guardian receptor grid.',
-    hasCTA: true
+    id: 'ch-4',
+    num: '4. THE GUARDIAN RISES',
+    title: 'THE GUARDIAN RISES',
+    subtitle: 'THE VIGILANT SHIELD',
+    caption: 'Not to control people. To stand beside them.',
+    quote: '“Obsidian armor forged with temporal energy conduits. KAIROS awakens at the decisive turning point of every crisis.”',
+    tag: 'MOMENT CORE // ONLINE',
+    image: '/story/scene1-guardian-overlook.jpg',
+    icon: Shield
   },
   {
-    id: 'panel-05',
-    num: 'PANEL 05',
-    title: 'THE RESPONSE',
-    caption: 'Every signal deserves a response.',
-    quote: '“Through the Moment Engine, chaotic inputs crystallize into instantaneous priority intervention.”',
-    artTag: 'TELEMETRY // ROUTED',
-    accent: 'amber',
-    icon: Zap,
-    artDesc: 'Signals are categorized, encrypted, and dispatched at temporal velocity.'
-  },
-  {
-    id: 'panel-06',
-    num: 'PANEL 06',
-    title: 'THE FUTURE',
-    caption: 'People. Safety. Tomorrow.',
-    quote: '“A perpetual sentinel watching over human inflection points, ensuring tomorrow arrives safely.”',
-    artTag: 'DAWN // SECTOR 07',
-    accent: 'cyan',
-    icon: Sparkles,
-    artDesc: 'KAIROS stands triumphant atop the guardian spire, watching the sunrise.'
+    id: 'ch-5',
+    num: '5. TOGETHER, ALWAYS',
+    title: 'TOGETHER, ALWAYS',
+    subtitle: 'AN ENDURING PROMISE',
+    caption: 'No citizen faces the dark alone.',
+    quote: '“A stronger tomorrow begins with a kinder today. KAIROS remains on perpetual watch across all sectors.”',
+    tag: 'DAWN // CONTINUOUS FEED',
+    image: '/story/scene3-guardian-shield.jpg',
+    icon: Radio
   }
 ];
 
 export default function ComicStory({ onOpenSignal }) {
-  const [activePanelIndex, setActivePanelIndex] = useState(0);
+  const [activeChapterIndex, setActiveChapterIndex] = useState(3); // Chapter 4 "The Guardian Rises" default
+  const [scrollY, setScrollY] = useState(0);
 
-  const handlePanelClick = (index) => {
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleSelectChapter = (index) => {
     playClickSound();
+    playStoryTransitionSound();
     startCinematicTheme();
-    setActivePanelIndex(index);
+    setActiveChapterIndex(index);
   };
 
-  const handleNext = () => {
-    playClickSound();
-    startCinematicTheme();
-    setActivePanelIndex((prev) => (prev + 1) % COMIC_PANELS.length);
-  };
-
-  const handlePrev = () => {
-    playClickSound();
-    startCinematicTheme();
-    setActivePanelIndex((prev) => (prev - 1 + COMIC_PANELS.length) % COMIC_PANELS.length);
-  };
-
-  const handleSignalClick = () => {
+  const handleExploreClick = () => {
     playClickSound();
     startCinematicTheme();
     if (onOpenSignal) onOpenSignal();
   };
 
+  const currentChapter = STORY_CHAPTERS[activeChapterIndex];
+  // Subtle parallax translation
+  const parallaxOffset = (scrollY * 0.04) % 40;
+
   return (
-    <section id="comic-story" className="section comic-story-section" aria-labelledby="story-heading">
-      <div className="container">
-        {/* Section Header */}
-        <div className="section-header">
-          <div className="section-tag">
-            <BookOpen size={13} aria-hidden="true" />
-            <span>CINEMATIC GRAPHIC CHRONICLE</span>
-          </div>
-          <h2 id="story-heading" className="section-title">THE KAIROS CHRONICLES</h2>
-          <p className="section-description">
-            The origin journey of the Moment Keeper — from an experimental listener to humanity's vigilant guardian.
-          </p>
-        </div>
+    <section id="comic-story" className="section cinematic-story-section" aria-labelledby="story-heading">
+      {/* 
+        Full-Bleed Panoramic KAIROS Artwork Layer with Low Opacity,
+        Cinematic Dark Gradient Overlays, Soft Blur, and Parallax Shift
+      */}
+      <div
+        className="story-fullbleed-backdrop"
+        style={{
+          backgroundImage: `url(${currentChapter.image})`,
+          transform: `translateY(${parallaxOffset}px) scale(1.04)`
+        }}
+        aria-hidden="true"
+      >
+        <div className="story-backdrop-vignette"></div>
+      </div>
 
-        {/* Comic Storyboard Layout */}
-        <div className="comic-storyboard-wrapper">
-          {/* Active Featured Spotlight Panel */}
-          <div className="comic-spotlight-frame glass-card">
-            <div className="comic-halftone-overlay" aria-hidden="true"></div>
-            
-            <div className="spotlight-header">
-              <span className="comic-issue-stamp">ISSUE #01 // ORIGIN ARC</span>
-              <span className="spotlight-num">{COMIC_PANELS[activePanelIndex].num}</span>
+      <div className="container relative-content">
+        <div className="story-layout-grid">
+          {/* Left Column: Story Manifesto */}
+          <div className="story-text-column">
+            <div className="story-eyebrow">
+              <BookOpen size={14} aria-hidden="true" />
+              <span>OUR STORY</span>
             </div>
 
-            <div className="spotlight-body">
-              <div className="spotlight-art-container">
-                {/* Comic Speed Lines Graphic Background */}
-                <div className="comic-speed-lines" aria-hidden="true"></div>
+            <h2 id="story-heading" className="story-headline">
+              A WORLD THAT<br />CHOSE TO CARE
+            </h2>
 
-                <div className="art-center-content">
-                  <div className="art-icon-circle">
-                    {React.createElement(COMIC_PANELS[activePanelIndex].icon, {
-                      size: 40,
-                      className: `comic-art-icon ${COMIC_PANELS[activePanelIndex].accent}`
-                    })}
-                  </div>
-                  <span className="art-tag-label">{COMIC_PANELS[activePanelIndex].artTag}</span>
-                  <p className="art-desc-text">{COMIC_PANELS[activePanelIndex].artDesc}</p>
-                </div>
+            <p className="story-manifesto-para">
+              KAIROS was born from a simple belief — that safety is a right, not a privilege. In a world of growing uncertainty, we stand as a global guardian network, uniting people, technology and compassion.
+            </p>
+
+            <button
+              type="button"
+              className="btn btn-primary-blue story-cta-btn"
+              onClick={handleExploreClick}
+              aria-label="Explore KAIROS story and send signal"
+            >
+              <span>EXPLORE THE STORY</span>
+              <ArrowRight size={15} aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* Center Column: Cinematic Graphic Novel Visual Panel */}
+          <div className="story-art-column">
+            <div className="story-art-card glass-card">
+              {/* Scene Artwork Backdrop with subtle zoom transition */}
+              <div
+                className="story-panel-art-bg"
+                style={{ backgroundImage: `url(${currentChapter.image})` }}
+                aria-hidden="true"
+              >
+                <div className="panel-inner-vignette"></div>
               </div>
 
-              <div className="spotlight-narrative">
-                <div className="comic-caption-box">
-                  <span className="caption-label">NARRATIVE CHRONICLE</span>
-                  <h3 className="caption-title">{COMIC_PANELS[activePanelIndex].title}</h3>
-                  <p className="caption-lead">“{COMIC_PANELS[activePanelIndex].caption}”</p>
-                </div>
+              {/* Script Calligraphy Quote matching reference */}
+              <div className="story-script-overlay">
+                <span className="script-line">Real People</span>
+                <span className="script-line">Real Stories</span>
+                <span className="script-line accent">A Safer Tomorrow</span>
+              </div>
 
-                <blockquote className="comic-dialogue-bubble">
-                  {COMIC_PANELS[activePanelIndex].quote}
-                </blockquote>
-
-                {/* Interactive CTA within story */}
-                <div className="spotlight-actions">
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={handleSignalClick}
-                    aria-label="Send a priority signal to KAIROS"
-                  >
-                    <Radio size={14} aria-hidden="true" />
-                    <span>SIGNAL KAIROS NOW</span>
-                  </button>
-
-                  <div className="comic-step-nav">
-                    <button
-                      type="button"
-                      className="comic-nav-arrow"
-                      onClick={handlePrev}
-                      aria-label="Previous Comic Panel"
-                    >
-                      ←
-                    </button>
-                    <span className="comic-step-counter">
-                      {activePanelIndex + 1} / {COMIC_PANELS.length}
-                    </span>
-                    <button
-                      type="button"
-                      className="comic-nav-arrow"
-                      onClick={handleNext}
-                      aria-label="Next Comic Panel"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
+              {/* Active Chapter Live Text Overlay */}
+              <div className="story-panel-caption-box">
+                <span className="caption-tag">{currentChapter.tag}</span>
+                <h4 className="caption-heading">{currentChapter.title}</h4>
+                <p className="caption-quote">{currentChapter.quote}</p>
               </div>
             </div>
           </div>
 
-          {/* 6 Comic Panel Strip / Thumbnails */}
-          <div className="comic-strip-grid" role="tablist" aria-label="Comic Panels Navigation">
-            {COMIC_PANELS.map((panel, idx) => {
-              const isActive = activePanelIndex === idx;
-              const IconComponent = panel.icon;
+          {/* Right Column: 5-Chapter Playlist matching reference */}
+          <div className="story-playlist-column" role="tablist" aria-label="Story Chapters Navigation">
+            {STORY_CHAPTERS.map((ch, idx) => {
+              const isActive = activeChapterIndex === idx;
 
               return (
                 <button
-                  key={panel.id}
+                  key={ch.id}
                   type="button"
                   role="tab"
                   aria-selected={isActive}
-                  className={`comic-panel-card glass-card ${isActive ? 'active' : ''}`}
-                  onClick={() => handlePanelClick(idx)}
+                  className={`story-chapter-card glass-card ${isActive ? 'active-chapter' : ''}`}
+                  onClick={() => handleSelectChapter(idx)}
                 >
-                  <div className="panel-card-badge">
-                    <span>{panel.num}</span>
-                    <IconComponent size={12} aria-hidden="true" />
+                  <div
+                    className="chapter-thumb-art"
+                    style={{ backgroundImage: `url(${ch.image})` }}
+                    aria-hidden="true"
+                  >
+                    <span className="thumb-visor-glow"></span>
                   </div>
-
-                  <h4 className="panel-card-title">{panel.title}</h4>
-                  <p className="panel-card-snippet">{panel.caption}</p>
-
-                  <div className="panel-card-hover-cue">
-                    <span>INSPECT PANEL</span>
-                    <ArrowRight size={11} aria-hidden="true" />
+                  <div className="chapter-meta">
+                    <span className="chapter-title">{ch.num}</span>
+                    {isActive && <span className="chapter-active-label">ACTIVE CHRONICLE</span>}
                   </div>
                 </button>
               );

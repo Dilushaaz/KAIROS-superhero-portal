@@ -1,7 +1,7 @@
 /**
- * KAIROS Cinematic Soundtrack & Audio Service
- * Synthesizes an epic, royal, heroic orchestral-electronic soundtrack and
- * subtle command-center interface sound effects via native Web Audio API.
+ * KAIROS Cinematic Soundtrack & Dynamic Audio Service
+ * Synthesizes a royal, heroic, mysterious orchestral-electronic score and
+ * high-fidelity command-center sound effects via native Web Audio API.
  * 100% original, royalty-free, 0MB external audio downloads, instant start.
  */
 
@@ -20,7 +20,9 @@ function getAudioContext() {
     }
   }
   if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {
+      // Handled silently if browser policy blocks initial resume
+    });
   }
   return audioCtx;
 }
@@ -56,10 +58,13 @@ export function setSoundEnabled(enabled) {
   return enabled;
 }
 
+/**
+ * Soft futuristic button click
+ */
 export function playClickSound() {
   if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || ctx.state === 'suspended') return;
 
   try {
     const now = ctx.currentTime;
@@ -67,11 +72,11 @@ export function playClickSound() {
     const gain = ctx.createGain();
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(1050, now);
-    osc.frequency.exponentialRampToValueAtTime(1550, now + 0.04);
+    osc.frequency.setValueAtTime(1150, now);
+    osc.frequency.exponentialRampToValueAtTime(1650, now + 0.04);
 
-    gain.gain.setValueAtTime(0.06, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -79,14 +84,17 @@ export function playClickSound() {
     osc.start(now);
     osc.stop(now + 0.05);
   } catch {
-    // ignore
+    // Ignore audio glitches
   }
 }
 
+/**
+ * Soft incoming transmission / message chime
+ */
 export function playMessageSound() {
   if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || ctx.state === 'suspended') return;
 
   try {
     const now = ctx.currentTime;
@@ -112,21 +120,202 @@ export function playMessageSound() {
     osc2.start(now + 0.07);
     osc2.stop(now + 0.18);
   } catch {
-    // ignore
+    // Ignore
   }
 }
 
-export function playDispatchSound() {
+/**
+ * Threat level confirmation tones
+ * LOW: Soft pleasant harmonic chime
+ * URGENT: Dual-frequency alert pulse
+ * CRITICAL: Sub-bass boom + high priority klaxon pulse
+ */
+export function playThreatLevelSound(level) {
   if (!isSoundEnabled()) return;
   const ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || ctx.state === 'suspended') return;
 
   try {
     const now = ctx.currentTime;
-    const notes = [440, 554.37, 659.25, 880];
+
+    if (level === 'LOW') {
+      const notes = [523.25, 659.25]; // C5, E5
+      notes.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + i * 0.06);
+        gain.gain.setValueAtTime(0.05, now + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.24);
+      });
+    } else if (level === 'URGENT') {
+      const notes = [440, 587.33, 659.25]; // A4, D5, E5
+      notes.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + i * 0.05);
+        gain.gain.setValueAtTime(0.07, now + i * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.05);
+        osc.stop(now + i * 0.05 + 0.32);
+      });
+    } else if (level === 'CRITICAL') {
+      // Sub-bass impact
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subOsc.type = 'sawtooth';
+      subOsc.frequency.setValueAtTime(110, now);
+      subOsc.frequency.exponentialRampToValueAtTime(36, now + 0.4);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(140, now);
+
+      subGain.gain.setValueAtTime(0.2, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+      subOsc.connect(filter);
+      filter.connect(subGain);
+      subGain.connect(ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 0.65);
+
+      // Warning double tone
+      [0, 0.14].forEach((delay) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(415.3, now + delay);
+        gain.gain.setValueAtTime(0.05, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.13);
+      });
+    }
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Radar scan sonar sweep sound
+ */
+export function playRadarSweepSound() {
+  if (!isSoundEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state === 'suspended') return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1420, now);
+    osc.frequency.exponentialRampToValueAtTime(940, now + 0.28);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1100, now);
+    filter.Q.setValueAtTime(4.0, now);
+
+    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.36);
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Signal Vault archive holographic activation sound
+ */
+export function playVaultSound() {
+  if (!isSoundEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state === 'suspended') return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(1280, now + 0.18);
+
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Story transition panel slide sound
+ */
+export function playStoryTransitionSound() {
+  if (!isSoundEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state === 'suspended') return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(280, now);
+    osc.frequency.exponentialRampToValueAtTime(740, now + 0.15);
+
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.26);
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Priority Signal Dispatch transmission chime
+ */
+export function playDispatchSound() {
+  if (!isSoundEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state === 'suspended') return;
+
+  try {
+    const now = ctx.currentTime;
+    const notes = [440, 554.37, 659.25, 880, 1108.73];
 
     notes.forEach((freq, idx) => {
-      const startTime = now + idx * 0.06;
+      const startTime = now + idx * 0.05;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -139,15 +328,15 @@ export function playDispatchSound() {
       gain.connect(ctx.destination);
 
       osc.start(startTime);
-      osc.stop(startTime + 0.45);
+      osc.stop(startTime + 0.48);
     });
   } catch {
-    // ignore
+    // Ignore
   }
 }
 
 /**
- * AAA Heroic Orchestral-Synthesizer Soundtrack
+ * Cinematic Heroic Orchestral-Synthesizer Soundtrack
  * Emotion: Royal, heroic, mysterious, powerful, suspenseful.
  * Progression: D minor -> Bb major -> C major -> D minor
  * Rich detuned analog pads, deep resonant drone, slow breathing LFO, and periodic cinematic impact pulses.
@@ -160,7 +349,7 @@ export function startCinematicTheme() {
   try {
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
-    masterGain.gain.exponentialRampToValueAtTime(0.065, ctx.currentTime + 3.5); // Smooth 3.5s fade-in
+    masterGain.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + 3.2); // Smooth 3.2s fade-in
     masterGain.connect(ctx.destination);
 
     // 1. Deep Royal Bass Drone (D1: 36.71 Hz + D2: 73.42 Hz)
@@ -175,7 +364,7 @@ export function startCinematicTheme() {
 
     const droneFilter = ctx.createBiquadFilter();
     droneFilter.type = 'lowpass';
-    droneFilter.frequency.setValueAtTime(110, ctx.currentTime);
+    droneFilter.frequency.setValueAtTime(120, ctx.currentTime);
 
     const droneGain = ctx.createGain();
     droneGain.gain.setValueAtTime(0.65, ctx.currentTime);
@@ -194,7 +383,7 @@ export function startCinematicTheme() {
 
     const padFilter = ctx.createBiquadFilter();
     padFilter.type = 'lowpass';
-    padFilter.frequency.setValueAtTime(420, ctx.currentTime);
+    padFilter.frequency.setValueAtTime(440, ctx.currentTime);
     padFilter.Q.setValueAtTime(2.2, ctx.currentTime);
 
     // Slow atmospheric breathing LFO filter modulation
@@ -203,7 +392,7 @@ export function startCinematicTheme() {
     lfo.frequency.setValueAtTime(0.12, ctx.currentTime); // 0.12 Hz slow royal wave
 
     const lfoGain = ctx.createGain();
-    lfoGain.gain.setValueAtTime(200, ctx.currentTime);
+    lfoGain.gain.setValueAtTime(220, ctx.currentTime);
 
     lfo.connect(lfoGain);
     lfoGain.connect(padFilter.frequency);
@@ -216,7 +405,7 @@ export function startCinematicTheme() {
       osc.detune.setValueAtTime((idx % 2 === 0 ? 6 : -7), ctx.currentTime);
 
       const oscGain = ctx.createGain();
-      oscGain.gain.setValueAtTime(0.12, ctx.currentTime);
+      oscGain.gain.setValueAtTime(0.11, ctx.currentTime);
 
       osc.connect(padFilter);
       osc.start();
@@ -226,8 +415,8 @@ export function startCinematicTheme() {
     padFilter.connect(masterGain);
 
     // 3. Periodic Cinematic Sub Impact Pulse (every 6 seconds)
-    let impactInterval = setInterval(() => {
-      if (!isMusicPlaying || !ctx) return;
+    const impactInterval = setInterval(() => {
+      if (!isMusicPlaying || !ctx || ctx.state === 'suspended') return;
       try {
         const impactNow = ctx.currentTime;
         const impactOsc = ctx.createOscillator();
@@ -237,7 +426,7 @@ export function startCinematicTheme() {
         impactOsc.frequency.setValueAtTime(95, impactNow);
         impactOsc.frequency.exponentialRampToValueAtTime(32, impactNow + 0.35);
 
-        impactGain.gain.setValueAtTime(0.4, impactNow);
+        impactGain.gain.setValueAtTime(0.35, impactNow);
         impactGain.gain.exponentialRampToValueAtTime(0.001, impactNow + 1.2);
 
         impactOsc.connect(impactGain);
@@ -246,7 +435,7 @@ export function startCinematicTheme() {
         impactOsc.start(impactNow);
         impactOsc.stop(impactNow + 1.25);
       } catch {
-        // ignore
+        // Ignore
       }
     }, 6000);
 
@@ -261,7 +450,7 @@ export function startCinematicTheme() {
 
     isMusicPlaying = true;
   } catch {
-    // ignore
+    // Ignore
   }
 }
 
@@ -281,9 +470,9 @@ export function stopCinematicTheme() {
           bgMusicNodes.droneOsc1?.stop();
           bgMusicNodes.droneOsc2?.stop();
           bgMusicNodes.lfo?.stop();
-          bgMusicNodes.padOscs?.forEach(o => o.stop());
+          bgMusicNodes.padOscs?.forEach((o) => o.stop());
         } catch {
-          // ignore
+          // Ignore
         }
         bgMusicNodes = null;
         isMusicPlaying = false;
@@ -295,18 +484,45 @@ export function stopCinematicTheme() {
   }
 }
 
+/**
+ * Autoplay handling: Attempt start immediately on load, with silent fallback to user interaction.
+ */
 if (typeof window !== 'undefined') {
-  const onFirstInteraction = () => {
+  const tryStartAudio = () => {
     if (isSoundEnabled()) {
-      getAudioContext();
-      startCinematicTheme();
+      const ctx = getAudioContext();
+      if (ctx) {
+        if (ctx.state === 'running') {
+          startCinematicTheme();
+        } else {
+          ctx.resume().then(() => {
+            startCinematicTheme();
+          }).catch(() => {
+            // Browser autoplay restrictions in place, will start on next gesture
+          });
+        }
+      }
     }
-    window.removeEventListener('click', onFirstInteraction);
-    window.removeEventListener('keydown', onFirstInteraction);
-    window.removeEventListener('touchstart', onFirstInteraction);
   };
 
-  window.addEventListener('click', onFirstInteraction, { once: true });
-  window.addEventListener('keydown', onFirstInteraction, { once: true });
-  window.addEventListener('touchstart', onFirstInteraction, { once: true });
+  // Attempt right away
+  if (document.readyState === 'complete') {
+    tryStartAudio();
+  } else {
+    window.addEventListener('load', tryStartAudio, { once: true });
+  }
+
+  // Graceful user gesture trigger
+  const onUserGesture = () => {
+    tryStartAudio();
+    window.removeEventListener('click', onUserGesture);
+    window.removeEventListener('keydown', onUserGesture);
+    window.removeEventListener('touchstart', onUserGesture);
+    window.removeEventListener('wheel', onUserGesture);
+  };
+
+  window.addEventListener('click', onUserGesture, { once: true });
+  window.addEventListener('keydown', onUserGesture, { once: true });
+  window.addEventListener('touchstart', onUserGesture, { once: true });
+  window.addEventListener('wheel', onUserGesture, { once: true });
 }
